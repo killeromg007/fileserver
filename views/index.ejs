@@ -92,6 +92,12 @@
                                         >
                                             <i class="fas fa-eye"></i> Preview
                                         </a>
+                                        <% if (file.type === 'text') { %>
+                                            <a href="/edit/<%= currentPath ? currentPath + '/' : '' %><%= file.name %>" 
+                                                class="edit-btn">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                        <% } %>
                                     <% } %>
                                 </div>
                             </div>

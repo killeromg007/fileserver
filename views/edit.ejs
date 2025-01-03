@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit File</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.tiny.cloud/1/<%= apiKey %>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <style>
+        .editor-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .action-buttons {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        #save-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #save-btn:hover {
+            opacity: 0.9;
+        }
+        .back-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="action-buttons">
+            <a href="/" class="back-btn">Back to Files</a>
+            <button id="save-btn" onclick="saveContent()">Save Changes</button>
+        </div>
+        <textarea id="editor"><%= content %></textarea>
+    </div>
+
+    <script>
+        tinymce.init({
+            selector: '#editor',
+            height: 600,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }'
+        });
+
+        async function saveContent() {
+            const content = tinymce.get('editor').getContent();
+            try {
+                const response = await fetch('/save/<%= filePath %>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                if (response.ok) {
+                    alert('File saved successfully!');
+                } else {
+                    alert('Failed to save file');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to save file');
+            }
+        }
+    </script>
+</body>
+</html> 

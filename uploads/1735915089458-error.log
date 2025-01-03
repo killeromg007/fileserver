@@ -1,0 +1,11 @@
+[ERR] [SteamAutoCrack.Core.Utils.EMUGameInfo] Error 403 in getting game schema, please check your Steam Web API key. Skipping...
+[ERR] [SteamAutoCrack.Core.Utils.EMUGameInfo] Failed to get game schema.
+System.Exception: Error 403 in getting game schema.
+   at SteamAutoCrack.Core.Utils.Generator.GetGameSchema()
+[ERR] [SteamAutoCrack.Core.Utils.EMUGameInfo] Error 403 in getting game schema, please check your Steam Web API key. Skipping...
+[ERR] [SteamAutoCrack.Core.Utils.EMUGameInfo] Failed to get game schema.
+System.Exception: Error 403 in getting game schema.
+   at SteamAutoCrack.Core.Utils.Generator.GetGameSchema()
+[ERR] [SteamAutoCrack.Core.Utils.Processor] Failed to process.
+System.Exception: Invaild input path.
+   at SteamAutoCrack.Core.Utils.Processor.ProcessFileGUI()

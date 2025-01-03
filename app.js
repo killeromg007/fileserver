@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 
 const app = express();
 const port = 3000;
@@ -56,7 +57,6 @@ const storage = multer.diskStorage({
         const folder = req.body.folder || '';
         const uploadDir = path.join('uploads', folder);
         
-        // Create nested folders if they don't exist
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -68,9 +68,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ 
-    storage: storage
-});
+const upload = multer({ storage: storage });
 
 app.get('/', (req, res) => {
     const currentPath = req.query.path || '';
@@ -86,7 +84,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// Create new folder
 app.post('/folder', express.json(), (req, res) => {
     const folderPath = path.join('uploads', req.body.path || '', req.body.name);
     if (!fs.existsSync(folderPath)) {
@@ -113,6 +110,35 @@ app.get('/download/:path(*)', (req, res) => {
     const filePath = path.join(__dirname, 'uploads', req.params.path);
     res.download(filePath);
 });
+
+app.get('/edit/:path(*)', async (req, res) => {
+    const filePath = path.join(__dirname, 'uploads', req.params.path);
+    try {
+        const content = await fsPromises.readFile(filePath, 'utf8');
+        res.render('edit', { 
+            content,
+            filePath: req.params.path,
+            apiKey: 'jaqrbgaheclvc8lq4j1sds2f4ip3fq0e4e5frc2985tq2p9k'
+        });
+    } catch (error) {
+        res.status(500).send('Error reading file');
+    }
+});
+
+app.post('/save/:path(*)', express.json(), async (req, res) => {
+    const filePath = path.join(__dirname, 'uploads', req.params.path);
+    try {
+        await fsPromises.writeFile(filePath, req.body.content);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to save file' });
+    }
+});
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
