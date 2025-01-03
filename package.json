@@ -1,0 +1,14 @@
+{
+  "name": "file-sharing-website",
+  "version": "1.0.0",
+  "description": "Simple file sharing website",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Sharing Website</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>File Sharing Website</h1>
+        <a href="{{ url_for('upload') }}" class="upload-btn">Upload New File</a>
+        
+        <h2>Available Files:</h2>
+        <div class="files-list">
+            {% if files %}
+                {% for file in files %}
+                    <div class="file-item">
+                        <span>{{ file }}</span>
+                        <a href="{{ url_for('download', filename=file) }}" class="download-btn">Download</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No files available.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html> 

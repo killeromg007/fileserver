@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Sharing Website</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>File Sharing Website</h1>
+            <a href="/upload" class="upload-btn">
+                <i class="fas fa-upload"></i> Upload New File
+            </a>
+        </div>
+        
+        <div class="files-grid">
+            <% if (files && files.length > 0) { %>
+                <% files.forEach(function(file) { %>
+                    <div class="file-card">
+                        <div class="file-preview">
+                            <% if (file.type === 'image') { %>
+                                <img src="/uploads/<%= file.name %>" alt="<%= file.name %>">
+                            <% } else if (file.type === 'video') { %>
+                                <video controls preload="metadata">
+                                    <source src="/uploads/<%= file.name %>" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <% } else { %>
+                                <i class="fas 
+                                    <%= file.type === 'video' ? 'fa-video' : 
+                                        file.type === 'audio' ? 'fa-music' :
+                                        file.type === 'pdf' ? 'fa-file-pdf' :
+                                        file.type === 'text' ? 'fa-file-alt' :
+                                        'fa-file' %>">
+                                </i>
+                            <% } %>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name"><%= file.name %></div>
+                            <div class="file-meta">
+                                <span><%= file.size %> MB</span>
+                                <span><%= file.date %></span>
+                            </div>
+                            <div class="file-actions">
+                                <a href="/download/<%= file.name %>" class="download-btn">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <% if (['image', 'pdf', 'text', 'video'].includes(file.type)) { %>
+                                    <a href="/uploads/<%= file.name %>" 
+                                        class="preview-btn"
+                                        <% if (file.type === 'video') { %>
+                                            onclick="previewVideo(event, '<%= file.name %>')"
+                                        <% } else { %>
+                                            target="_blank"
+                                        <% } %>
+                                    >
+                                        <i class="fas fa-eye"></i> Preview
+                                    </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p>No files available.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Add preview modal -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="preview-container"></div>
+        </div>
+    </div>
+
+    <script>
+    function previewVideo(event, filename) {
+        event.preventDefault();
+        const modal = document.getElementById('preview-modal');
+        const container = document.getElementById('preview-container');
+        const close = document.getElementsByClassName('close')[0];
+        
+        container.innerHTML = `
+            <video controls style="max-width: 100%; max-height: 80vh;">
+                <source src="/uploads/${filename}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        `;
+        
+        modal.style.display = "block";
+        
+        close.onclick = function() {
+            modal.style.display = "none";
+            container.innerHTML = ''; // Clear video when closing
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+                container.innerHTML = ''; // Clear video when closing
+            }
+        }
+    }
+    </script>
+</body>
+</html> 
