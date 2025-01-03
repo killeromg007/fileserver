@@ -1,0 +1,15 @@
+<% items.forEach(function(item) { %>
+    <div class="tree-item <%= item.type === 'folder' ? 'folder' : 'file' %>">
+        <% if (item.type === 'folder') { %>
+            <a href="/?path=<%= item.path %>" class="<%= currentPath === item.path ? 'active' : '' %>">
+                <i class="fas fa-folder"></i>
+                <%= item.name %>
+            </a>
+            <% if (item.children && item.children.length > 0) { %>
+                <div class="tree-children">
+                    <%- include('folder-tree', { items: item.children, currentPath: currentPath }) %>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+<% }); %> 

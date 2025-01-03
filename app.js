@@ -8,7 +8,7 @@ const port = 3000;
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads')); // Allow access to uploads for preview
+app.use('/uploads', express.static('uploads'));
 
 // Helper function to get file type
 function getFileType(filename) {
@@ -21,12 +21,44 @@ function getFileType(filename) {
     return 'other';
 }
 
+// Helper function to get directory structure
+function getDirectoryStructure(dir) {
+    const items = fs.readdirSync(dir, { withFileTypes: true });
+    const structure = [];
+
+    items.forEach(item => {
+        const fullPath = path.join(dir, item.name);
+        if (item.isDirectory()) {
+            structure.push({
+                name: item.name,
+                path: fullPath.replace(/\\/g, '/').replace('uploads/', ''),
+                type: 'folder',
+                children: getDirectoryStructure(fullPath)
+            });
+        } else {
+            const stats = fs.statSync(fullPath);
+            structure.push({
+                name: item.name,
+                path: fullPath.replace(/\\/g, '/').replace('uploads/', ''),
+                type: getFileType(item.name),
+                size: (stats.size / 1024 / 1024).toFixed(2),
+                date: stats.mtime.toLocaleDateString()
+            });
+        }
+    });
+
+    return structure;
+}
+
 // Configure multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = 'uploads';
+        const folder = req.body.folder || '';
+        const uploadDir = path.join('uploads', folder);
+        
+        // Create nested folders if they don't exist
         if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
@@ -37,37 +69,48 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
+    storage: storage
 });
 
 app.get('/', (req, res) => {
-    const files = fs.readdirSync('uploads').map(filename => {
-        const stats = fs.statSync(path.join('uploads', filename));
-        return {
-            name: filename,
-            size: (stats.size / 1024 / 1024).toFixed(2), // Size in MB
-            type: getFileType(filename),
-            date: stats.mtime.toLocaleDateString()
-        };
+    const currentPath = req.query.path || '';
+    const structure = getDirectoryStructure('uploads');
+    const files = currentPath ? 
+        getDirectoryStructure(path.join('uploads', currentPath)) :
+        structure;
+    
+    res.render('index', { 
+        files,
+        structure,
+        currentPath
     });
-    res.render('index', { files });
+});
+
+// Create new folder
+app.post('/folder', express.json(), (req, res) => {
+    const folderPath = path.join('uploads', req.body.path || '', req.body.name);
+    if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+        res.json({ success: true });
+    } else {
+        res.status(400).json({ error: 'Folder already exists' });
+    }
 });
 
 app.get('/upload', (req, res) => {
-    res.render('upload');
+    const structure = getDirectoryStructure('uploads');
+    res.render('upload', { structure });
 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file selected');
     }
-    res.redirect('/');
+    res.redirect('/?path=' + (req.body.folder || ''));
 });
 
-app.get('/download/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, 'uploads', filename);
+app.get('/download/:path(*)', (req, res) => {
+    const filePath = path.join(__dirname, 'uploads', req.params.path);
     res.download(filePath);
 });
 

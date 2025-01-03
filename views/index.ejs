@@ -9,62 +9,108 @@
     <div class="container">
         <div class="header">
             <h1>File Sharing Website</h1>
-            <a href="/upload" class="upload-btn">
-                <i class="fas fa-upload"></i> Upload New File
-            </a>
+            <div class="header-actions">
+                <button onclick="showNewFolderModal()" class="folder-btn">
+                    <i class="fas fa-folder-plus"></i> New Folder
+                </button>
+                <a href="/upload<%= currentPath ? '?path=' + currentPath : '' %>" class="upload-btn">
+                    <i class="fas fa-upload"></i> Upload Files
+                </a>
+            </div>
         </div>
         
-        <div class="files-grid">
-            <% if (files && files.length > 0) { %>
-                <% files.forEach(function(file) { %>
-                    <div class="file-card">
-                        <div class="file-preview">
-                            <% if (file.type === 'image') { %>
-                                <img src="/uploads/<%= file.name %>" alt="<%= file.name %>">
-                            <% } else if (file.type === 'video') { %>
-                                <video controls preload="metadata">
-                                    <source src="/uploads/<%= file.name %>" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
+        <div class="content-wrapper">
+            <!-- Folder Tree -->
+            <div class="folder-tree">
+                <div class="tree-item">
+                    <a href="/" class="<%= !currentPath ? 'active' : '' %>">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </div>
+                <%- include('partials/folder-tree', { items: structure, currentPath: currentPath }) %>
+            </div>
+
+            <!-- Files Grid -->
+            <div class="files-grid">
+                <% if (currentPath) { %>
+                    <div class="breadcrumb">
+                        <a href="/"><i class="fas fa-home"></i></a>
+                        <% currentPath.split('/').forEach((part, index, array) => { %>
+                            <span>/</span>
+                            <% if (index === array.length - 1) { %>
+                                <span><%= part %></span>
                             <% } else { %>
-                                <i class="fas 
-                                    <%= file.type === 'video' ? 'fa-video' : 
-                                        file.type === 'audio' ? 'fa-music' :
-                                        file.type === 'pdf' ? 'fa-file-pdf' :
-                                        file.type === 'text' ? 'fa-file-alt' :
-                                        'fa-file' %>">
-                                </i>
+                                <a href="/?path=<%= array.slice(0, index + 1).join('/') %>"><%= part %></a>
                             <% } %>
-                        </div>
-                        <div class="file-info">
-                            <div class="file-name"><%= file.name %></div>
-                            <div class="file-meta">
-                                <span><%= file.size %> MB</span>
-                                <span><%= file.date %></span>
-                            </div>
-                            <div class="file-actions">
-                                <a href="/download/<%= file.name %>" class="download-btn">
-                                    <i class="fas fa-download"></i> Download
-                                </a>
-                                <% if (['image', 'pdf', 'text', 'video'].includes(file.type)) { %>
-                                    <a href="/uploads/<%= file.name %>" 
-                                        class="preview-btn"
-                                        <% if (file.type === 'video') { %>
-                                            onclick="previewVideo(event, '<%= file.name %>')"
-                                        <% } else { %>
-                                            target="_blank"
-                                        <% } %>
-                                    >
-                                        <i class="fas fa-eye"></i> Preview
+                        <% }) %>
+                    </div>
+                <% } %>
+
+                <% if (files && files.length > 0) { %>
+                    <% files.forEach(function(file) { %>
+                        <div class="file-card">
+                            <div class="file-preview">
+                                <% if (file.type === 'folder') { %>
+                                    <a href="/?path=<%= currentPath ? currentPath + '/' : '' %><%= file.name %>" class="folder-link">
+                                        <i class="fas fa-folder"></i>
                                     </a>
+                                <% } else if (file.type === 'image') { %>
+                                    <img src="/uploads/<%= file.name %>" alt="<%= file.name %>">
+                                <% } else if (file.type === 'video') { %>
+                                    <video controls preload="metadata">
+                                        <source src="/uploads/<%= file.name %>" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                <% } else { %>
+                                    <i class="fas 
+                                        <%= file.type === 'video' ? 'fa-video' : 
+                                            file.type === 'audio' ? 'fa-music' :
+                                            file.type === 'pdf' ? 'fa-file-pdf' :
+                                            file.type === 'text' ? 'fa-file-alt' :
+                                            'fa-file' %>">
+                                    </i>
                                 <% } %>
                             </div>
+                            <div class="file-info">
+                                <div class="file-name"><%= file.name %></div>
+                                <div class="file-meta">
+                                    <span><%= file.size %> MB</span>
+                                    <span><%= file.date %></span>
+                                </div>
+                                <div class="file-actions">
+                                    <a href="/download/<%= file.name %>" class="download-btn">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                    <% if (['image', 'pdf', 'text', 'video'].includes(file.type)) { %>
+                                        <a href="/uploads/<%= file.name %>" 
+                                            class="preview-btn"
+                                            <% if (file.type === 'video') { %>
+                                                onclick="previewVideo(event, '<%= file.name %>')"
+                                            <% } else { %>
+                                                target="_blank"
+                                            <% } %>
+                                        >
+                                            <i class="fas fa-eye"></i> Preview
+                                        </a>
+                                    <% } %>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                <% }); %>
-            <% } else { %>
-                <p>No files available.</p>
-            <% } %>
+                    <% }); %>
+                <% } else { %>
+                    <p>This folder is empty.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Folder Modal -->
+    <div id="folder-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Create New Folder</h2>
+            <input type="text" id="folder-name" placeholder="Folder name">
+            <button onclick="createFolder()" class="create-folder-btn">Create</button>
         </div>
     </div>
 
@@ -102,6 +148,38 @@
                 modal.style.display = "none";
                 container.innerHTML = ''; // Clear video when closing
             }
+        }
+    }
+
+    function showNewFolderModal() {
+        const modal = document.getElementById('folder-modal');
+        modal.style.display = 'block';
+    }
+
+    async function createFolder() {
+        const name = document.getElementById('folder-name').value;
+        if (!name) return;
+
+        try {
+            const response = await fetch('/folder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    path: '<%= currentPath %>'
+                })
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Failed to create folder');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to create folder');
         }
     }
     </script>
