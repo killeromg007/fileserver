@@ -78,9 +78,15 @@
                                     <span><%= file.date %></span>
                                 </div>
                                 <div class="file-actions">
-                                    <a href="/download/<%= file.name %>" class="download-btn">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
+                                    <% if (file.type === 'folder') { %>
+                                        <a href="/download-folder/<%= currentPath ? currentPath + '/' : '' %><%= file.name %>" class="download-btn">
+                                            <i class="fas fa-download"></i> Download Folder
+                                        </a>
+                                    <% } else { %>
+                                        <a href="/download/<%= file.name %>" class="download-btn">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    <% } %>
                                     <% if (['image', 'pdf', 'text', 'video'].includes(file.type)) { %>
                                         <a href="/uploads/<%= file.name %>" 
                                             class="preview-btn"

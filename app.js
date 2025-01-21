@@ -3,6 +3,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
+const archiver = require('archiver'); // Add this line
+const unzipper = require('unzipper'); // Add this line
 
 const app = express();
 const port = 3000;
@@ -91,6 +93,26 @@ app.post('/folder', express.json(), (req, res) => {
         res.json({ success: true });
     } else {
         res.status(400).json({ error: 'Folder already exists' });
+    }
+});
+
+app.post('/upload-archive', upload.single('archive'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file selected');
+    }
+    const filePath = path.join('uploads', req.file.filename);
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    
+    if (ext === '.zip') {
+        fs.createReadStream(filePath)
+            .pipe(unzipper.Extract({ path: 'uploads' }))
+            .on('close', () => res.redirect('/'))
+            .on('error', (err) => res.status(500).send('Error extracting ZIP file'));
+    } else if (ext === '.rar') {
+        // Handle RAR extraction (you may need a library for this)
+        res.status(400).send('RAR extraction not implemented');
+    } else {
+        res.status(400).send('Invalid file type');
     }
 });
 

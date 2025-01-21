@@ -11,6 +11,11 @@
             <input type="file" name="file" required>
             <button type="submit" class="upload-btn">Upload</button>
         </form>
+        <h2>Upload Archive (ZIP/RAR)</h2>
+        <form action="/upload-archive" method="post" enctype="multipart/form-data">
+            <input type="file" name="archive" accept=".zip,.rar" required>
+            <button type="submit" class="upload-btn">Upload Archive</button>
+        </form>
         <a href="/" class="back-btn">Back to Files</a>
     </div>
 </body>
